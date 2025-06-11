@@ -37,7 +37,7 @@ app.use(session({
   secret: 'korehan Dareni-mo-shirareteha ikenai himitsukagi', // セッション情報を暗号化するための秘密の言葉
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: true } // 本番環境(https)ではtrueにするのが望ましい
+  cookie: { secure: false } // 本番環境(https)ではtrueにするのが望ましい
 }));
 
 app.use(express.static('public'));
