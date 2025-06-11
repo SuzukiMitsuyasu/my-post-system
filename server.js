@@ -1,59 +1,83 @@
-// --- 準備：必要な道具（プログラム）を読み込む ---
-const express = require('express'); // Expressというフレームワーク（厨房の基本設備）
-const fs = require('fs');           // File Systemの略。ファイルを読み書きする道具
-const path = require('path');       // ファイルの場所を扱うための道具
+const express = require('express');
+const { MongoClient } = require('mongodb'); // ← fsの代わりにmongodbを読み込む
 
-// --- 初期設定：厨房の基本設定を行う ---
-const app = express();              // Expressアプリ（厨房そのもの）を作成
-const PORT = 3000;                  // サーバーの受付窓口（ポート番号）を3000番に設定
-const DB_PATH = path.join(__dirname, 'database.json'); // 冷蔵庫（データベース）の場所を覚える
+const app = express();
+const PORT = 3000;
 
-// --- ミドルウェア：厨房の自動化ルールを設定 ---
-// publicフォルダの中身（メニューやホールスタッフ）を、お客さんに見せる設定
+// =================================================================
+// !!! 重要 !!! あなたの接続文字列に書き換えてください
+// =================================================================
+// 先ほどパスワードを書き換えて、あなたが安全に保管した接続文字列を、以下の""の間に貼り付けてください
+const MONGODB_URI = process.env.MONGODB_URI;// =================================================================
+
+const dbName = 'poetypost-database'; // これから作るデータベース名
+const collectionName = 'poems'; // これから作るコレクション名
+
+// MongoDBクライアントのインスタンスを作成
+const client = new MongoClient(MONGODB_URI);
+let db; // データベースのインスタンスを保持する変数
+
+// --- データベースへの接続（非同期）---
+async function connectDB() {
+  try {
+    await client.connect();
+    console.log('MongoDBに正常に接続しました。');
+    db = client.db(dbName); // データベースのインスタンスを取得
+  } catch (e) {
+    console.error('MongoDBへの接続に失敗しました。', e);
+    process.exit(1); // 接続に失敗したらプログラムを終了
+  }
+}
+
+// ミドルウェアの設定
 app.use(express.static('public'));
-// お客さんからの注文（JSON形式のデータ）を、シェフが読める形に自動で変換する設定
 app.use(express.json());
 
-// --- APIエンドポイント：シェフの仕事内容（レシピ）を定義 ---
+// --- APIエンドポイントの定義（MongoDBを使うように書き換え）---
 
-// [GET] 特定のポストのテキストを渡す（料理を提供する）レシピ
-app.get('/posts/:postNumber', (req, res) => {
-  const postNumber = req.params.postNumber; // お客さんが指定したポスト番号（注文内容）を取得
-  fs.readFile(DB_PATH, 'utf8', (err, data) => { // 冷蔵庫から材料一覧を読み込む
-    if (err) {
-      return res.status(500).send('サーバーでエラーが発生しました。');
+// [GET] 特定のポストのテキストを取得するAPI
+app.get('/posts/:postNumber', async (req, res) => {
+  try {
+    const postNumber = parseInt(req.params.postNumber); // 文字列を数値に変換
+    const collection = db.collection(collectionName);
+    
+    // データベースからpostNumberが一致するドキュメントを一つ探す
+    const post = await collection.findOne({ post_number: postNumber });
+
+    if (post) {
+      res.json({ text: post.text }); // ドキュメントが見つかれば、そのテキストを返す
+    } else {
+      res.status(404).json({ text: 'そのポストにはテキストがありません。' });
     }
-    const db = JSON.parse(data); // 材料一覧をシェフが読める形式に変換
-    if (db[postNumber]) { // もし注文された料理の材料があれば...
-      res.json({ text: db[postNumber] }); // 出来上がった料理をお客さんに渡す
-    } else { // もし材料がなければ...
-      res.status(404).json({ text: 'そのポストにはテキストがありません。' }); // 「品切れです」と伝える
-    }
-  });
+  } catch (e) {
+    res.status(500).send('サーバーでエラーが発生しました。');
+  }
 });
 
-// [POST] 新しいテキストを保存する（新しい料理を作る）レシピ
-app.post('/posts', (req, res) => {
-  const { postNumber, text } = req.body; // 新しい料理の注文内容（ポスト番号とテキスト）を受け取る
+// [POST] 新しいテキストをポストに保存するAPI
+app.post('/posts', async (req, res) => {
+  try {
+    const { postNumber, text } = req.body;
+    const postNumberAsInt = parseInt(postNumber);
+    const collection = db.collection(collectionName);
 
-  fs.readFile(DB_PATH, 'utf8', (err, data) => { // まずは現在の冷蔵庫の中身を確認
-    if (err) {
-      return res.status(500).send('サーバーでエラーが発生しました。');
-    }
-    const db = JSON.parse(data);
-    db[postNumber] = text; // 新しい料理（データ）を作る
+    // post_numberが一致するドキュメントを探し、もし存在すれば更新、なければ新規作成(upsert)する
+    const result = await collection.updateOne(
+      { post_number: postNumberAsInt }, // 検索条件
+      { $set: { post_number: postNumberAsInt, text: text } }, // 保存・更新するデータ
+      { upsert: true } // trueにすると、データがなければ新規作成してくれる
+    );
 
-    // 新しい料理を含めた最新の状態で、冷蔵庫の中身を丸ごと上書き保存する
-    fs.writeFile(DB_PATH, JSON.stringify(db, null, 2), (err) => {
-      if (err) {
-        return res.status(500).send('保存に失敗しました。');
-      }
-      res.status(200).send('保存しました。'); // 「料理ができました」とお客さんに伝える
-    });
-  });
+    res.status(200).send('保存しました。');
+  } catch (e) {
+    res.status(500).send('保存に失敗しました。');
+  }
 });
 
-// --- サーバー起動：お店をオープンする ---
-app.listen(PORT, () => {
-  console.log(`サーバーが http://localhost:${PORT} で起動しました。`);
+// --- サーバー起動 ---
+// データベースに接続してから、Webサーバーを起動する
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`サーバーが http://localhost:${PORT} で起動しました。`);
+  });
 });
