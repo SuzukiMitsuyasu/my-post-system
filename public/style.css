@@ -1,0 +1,80 @@
+/* --- 全体の基本設定 --- */
+body {
+    font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; /* モダンなフォントを指定 */
+    background-color: #fff; /* 背景色を白に */
+    color: #333; /* 基本の文字色を濃いグレーに */
+    max-width: 500px; /* 画面が広くてもコンテンツの最大幅を800pxに制限 */
+    margin: 40px auto; /* 上下に40pxの余白、左右は自動で中央揃えにするテクニック */
+    padding: 50px; /* 上から詩のポストまでの余白*/
+}
+
+h1 {
+    text-align: center;
+    font-size: 1.2em; /* ←追加：文字サイズを指定。1.8emや2.2emなど色々試してください */
+    margin-bottom: 55px; /* ←追加：見出しの下に40pxの余白を追加 */
+
+
+}
+
+/* --- ① 上部UIのスタイル --- */
+.search-form {
+    display: flex; /* 入力欄とボタンを横並びにする */
+    justify-content: center; /* 中央揃えにする */
+    margin-bottom: 1.0em; /* 下に少し余白をあける */
+    border: 1px solid #ccc; /* 枠Z線を追加 */
+    padding: 3px;
+    width: 280px;      /* 枠全体の横幅を固定 */
+    margin-left: auto;  /* 枠自体を中央に配置 */
+    margin-right: auto;
+}
+
+.search-form input {
+    border: none; /* 入力欄の枠線を消す */
+    padding: 7px 6px;
+    font-size: 0.7em;
+    width: 180px;      /* 入力欄の横幅を固定 */
+}
+
+.search-form input:focus {
+    outline: none; /* クリックしたときの青い枠線を消す */
+}
+
+.search-form button {
+    border: none;
+    background-color: #eee;
+    padding: 0 20px;
+    cursor: pointer; /* マウスを乗せると指マークになる */
+    
+    /* ↓↓ここから追加↓↓ */
+    font-size: 0.8em;   /* 文字を小さく */
+    color: #888;         /* 文字色をグレーに */
+    margin-left: auto;  /* ボタンを右端に寄せる */
+}
+
+.description {
+    text-align: center; /* テキストを中央揃え */
+    font-size: 0.6em; /* 文字を少し小さく */
+    color: #666; /* 文字を少し薄い黒に */
+    line-height: 1.5; /* 行間を調整 */
+    margin-top: 2.0em; /* 上の要素との間に余白を設ける */
+}
+
+/* --- ② 詩の表示スタイル --- */
+#postContent {
+    font-size: 1.1em; /* 文字を大きくする */
+    font-family: 'Hiragino Mincho ProN', 'MS Mincho', serif; /* 明朝体のような上品なフォントを指定 */
+    line-height: 1.6; /* 行間を広くとる */
+    text-align: center; /* 全体を中央揃え */
+    white-space: pre-wrap; /* 自動で折り返しつつ、スペースや改行は維持する */
+    color: #000; /* 文字色を黒に */
+    margin-top: 3.5em;
+}
+
+/* --- ③ フッターのスタイル --- */
+footer {
+    text-align: center;
+    margin-top: 80px; /* 上に大きく余白をとる */
+    padding: 20px;
+    font-size: 0.7em;
+    color: #888;
+}

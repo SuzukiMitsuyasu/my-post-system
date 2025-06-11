@@ -3,16 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <title>詩のポスト</title>
+    <link rel="stylesheet" href="style.css"> 
 </head>
 <body>
     <h1>詩のポスト</h1>
 
-    <p>ポスト番号:</p>
-    <input type="number" id="userPostNumber" placeholder="例: 1">
-    <button id="viewButton">閲覧</button>
+    <div class="search-form">
+        <input type="number" id="userPostNumber" placeholder="半角数字">
+        <button id="viewButton">開く</button>
+    </div>
+    <p class="description">
+        詩人の鈴木光泰です。<br>
+        約束の番号を入力してね。<br>
+        まだ出来ていなかったら、もうちょっと待ってね。<br>
+        当てずっぽで入力してもいいかもね。
+    </p>
 
-    <h2>ポストの中身:</h2>
     <pre id="postContent"></pre>
+
+    <footer>
+        詩のポスト (C)2025 鈴木光泰
+    </footer>
 
     <script src="main.js"></script>
 </body>
