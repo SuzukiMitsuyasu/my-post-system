@@ -18,7 +18,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const response = await fetch('/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ username, password }),
+            credentials: 'include' // ← チャットGPTで追加！！！
+
         });
 
         // サーバーからの返事を受け取る
